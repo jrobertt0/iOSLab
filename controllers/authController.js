@@ -38,8 +38,7 @@ export const register = async (req, res) => {
 			);
 			res.send({
 				status: "success",
-				message: "User added successfully",
-				token: token,
+				message: token,
 			});
 		})
 		.catch((err) => res.send({ status: "Error", message: err.errors }));
