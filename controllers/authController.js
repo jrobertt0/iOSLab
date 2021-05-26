@@ -1,95 +1,98 @@
 import User from "../models/user.model.js";
-import Task from "../models/task.model.js";
+import { registerValidation, loginValidation } from "../includes/validation.js";
+import jwt from "jsonwebtoken";
 
-export const test = async (req, res) => {
-	res.send("funciona");
-};
-
-export const auth = async (req, res) => {
-	let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-
-	const existingUser = await User.findOne({ ip: ip });
-	if (existingUser !== null) return res.send({ id: existingUser._id });
-
+export const register = async (req, res) => {
+	const data = req.body;
+	const { error } = registerValidation(data);
 	const newUser = new User();
-	newUser.ip = ip;
+
+	if (error) return res.send({ status: "Error", message: err.errors });
+	try {
+		const existingUser = await User.findOne({ username: data.username });
+		if (existingUser)
+			return res.send({
+				status: "Error",
+				message: "User already exists",
+			});
+
+		newUser.username = data.username;
+		newUser.name = data.name;
+		newUser.school = data.school;
+		newUser.score = data.score;
+		newUser.password = await newUser.encryptPassword(data.password);
+	} catch (err) {
+		console.log(err);
+		return res.send({
+			status: "Error",
+			message: "Problems while processing",
+		});
+	}
 
 	newUser
 		.save()
 		.then((savedUser) => {
-			res.send({ id: savedUser._id });
+			const token = jwt.sign(
+				{ _id: savedUser._id },
+				process.env.TOKEN_SECRET
+			);
+			res.send({
+				status: "success",
+				message: "User added successfully",
+				token: token,
+			});
 		})
-		.catch((err) => res.send({ err }));
+		.catch((err) => res.send({ status: "Error", message: err.errors }));
 };
 
-export const getTask = async (req, res) => {
-	console.log("aqui");
-	User.findById(req.params.userid)
-		.then((user) =>
-			res.json({
-				task: user.tasks.filter(
-					(task) => (task.id = req.params.taskid)
-				),
-			})
-		)
-		.catch((err) => res.status(400).json("Error: " + err));
+export const login = async (req, res) => {
+	const data = req.body;
+	const { error } = loginValidation(data);
+
+	if (error)
+		return res.send({
+			status: "Error",
+			message: error.details[0].message,
+		});
+
+	const user = await User.findOne({ username: data.username });
+	if (!user)
+		return res.send({
+			status: "Error",
+			message: "Username or Password are wrong",
+		});
+
+	const validPass = await user.comparePassword(data.password);
+	if (!validPass)
+		return res.send({
+			status: "Error",
+			message: "Username or Password are wrong",
+		});
+
+	const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+	res.header("auth-token", token).send({
+		status: "success",
+		message: "User logged in",
+		token: token,
+	});
 };
 
-export const getTasks = async (req, res) => {
-	User.findById(req.params.userid)
-		.then((user) => res.send({ tasks: user.tasks }))
-		.catch((err) => res.status(400).json("Error: " + err));
-};
+export function auth(req, res, next) {
+	const token = req.header("auth-token");
+	if (!token)
+		return res.status(401).send({
+			status: "Error",
+			message: "Access Denied",
+		});
 
-export const addTask = (req, res) => {
-	const { name, description } = req.body;
-
-	User.findById(req.params.userid)
-		.then((user) => {
-			let index = 0;
-			if (user.tasks.length > 0)
-				index = user.tasks[user.tasks.length - 1].id + 1;
-
-			user.tasks.push(new Task(index, name, description));
-
-			user.save()
-				.then(() => res.json("status: success"))
-				.catch((err) => res.status(400).json("Error: " + err));
-		})
-		.catch((err) => res.status(400).json("Error: " + err));
-};
-
-export const deleteTask = async (req, res) => {
-	const { taskid } = req.body;
-
-	User.findById(req.params.userid)
-		.then((user) => {
-			user.tasks = user.tasks.filter((val) => val.id !== taskid);
-
-			user.save()
-				.then(() => res.json("status: success"))
-				.catch((err) => res.status(400).json("Error: " + err));
-		})
-		.catch((err) => res.status(400).json("Error: " + err));
-};
-
-export const editTask = async (req, res) => {
-	const { taskid, name, description } = req.body;
-
-	User.findById(req.params.userid)
-		.then((user) => {
-			let tasks = user.tasks;
-			for (let i = 0; i < tasks.length; i++) {
-				if (parseInt(tasks[i].id) === parseInt(taskid)) {
-					tasks[i].name = name;
-					tasks[i].description = description;
-				}
-			}
-			user.tasks = tasks;
-			user.markModified("tasks");
-			user.save()
-				.then(() => res.json("status: success"))
-				.catch((err) => res.status(400).json("Error: " + err));
-		})
-		.catch((err) => res.status(400).json("Error: " + err));
-};
+	try {
+		const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+		req.username = verified;
+		next();
+	} catch (err) {
+		return res.status(400).send({
+			status: "Error",
+			message: "Invalid Token",
+		});
+	}
+}
