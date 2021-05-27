@@ -11,10 +11,8 @@ export const getUser = async (req, res) => {
 			.send(new response({ data: { user: {
 				username: user.username,
 				name: user.name,
-				password: user.password,
 				school: user.school,
 				score: user.score,
-				date: user.date
 			} } }))
 			.catch((err) =>
 				res
