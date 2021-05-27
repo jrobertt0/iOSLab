@@ -1,11 +1,13 @@
 class response {
-    status;
-    message;
-    data;
+	status;
+	message;
+	data;
 
-    constructor(status = "Success", message = "", data = null){
-        this.status = status;
-        this.message = message;
-        this.data = data
-    }
+	constructor(obj) {
+		this.status = obj.status ? obj.status : "Success";
+		this.message = obj.message ? obj.message : "";
+		this.data = obj.data ? obj.data : null;
+	}
 }
+
+export default response;
