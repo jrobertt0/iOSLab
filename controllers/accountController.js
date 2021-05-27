@@ -6,21 +6,27 @@ import response from "../includes/response.js";
 import User from "../models/user.model.js";
 
 export const getUser = async (req, res) => {
-	User.findById(req.username).then((user) =>
-		res
-			.send(new response({ data: { user: {
-				username: user.username,
-				name: user.name,
-				school: user.school,
-				score: user.score,
-				date: user.date
-			} } }))
-			.catch((err) =>
-				res
-					.status(400)
-					.send(new response({ status: "Error", message: err }))
+	User.findById(req.username)
+		.then((user) =>
+			res.send(
+				new response({
+					data: {
+						user: {
+							username: user.username,
+							name: user.name,
+							school: user.school,
+							score: user.score,
+							date: user.date,
+						},
+					},
+				})
 			)
-	);
+		)
+		.catch((err) =>
+			res
+				.status(400)
+				.send(new response({ status: "Error", message: err }))
+		);
 };
 
 export const editUser = async (req, res) => {
