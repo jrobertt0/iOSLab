@@ -33,7 +33,7 @@ export const getTasks = async (req, res) => {
 };
 
 export const addTask = (req, res) => {
-	const { title, teacher, points, place, date, description } = req.body;
+	const { title, teacher, points, place, date, description, subject } = req.body;
 
 	User.findById(req.username)
 		.then((user) => {
