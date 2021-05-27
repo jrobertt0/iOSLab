@@ -13,6 +13,7 @@ export const getUser = async (req, res) => {
 				name: user.name,
 				school: user.school,
 				score: user.score,
+				date: user.date
 			} } }))
 			.catch((err) =>
 				res
