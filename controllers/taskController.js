@@ -33,7 +33,8 @@ export const getTasks = async (req, res) => {
 };
 
 export const addTask = (req, res) => {
-	const { title, teacher, points, place, date, description, subject } = req.body;
+	const { title, teacher, points, place, date, description, subject } =
+		req.body;
 
 	User.findById(req.username)
 		.then((user) => {
@@ -55,7 +56,7 @@ export const addTask = (req, res) => {
 			);
 
 			user.save()
-				.then(() => res.send(new response({})))
+				.then(() => res.send(new response({ data: { id: index } })))
 				.catch((err) =>
 					res
 						.status(400)
