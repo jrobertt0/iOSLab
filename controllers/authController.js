@@ -8,7 +8,13 @@ export const register = async (req, res) => {
 	const { error } = registerValidation(data);
 	const newUser = new User();
 
-	if (error) return res.send({ status: "Error", message: err.errors });
+	if (error)
+		return res.send(
+			new response({
+				status: "Error",
+				message: error.details[0].message,
+			})
+		);
 	try {
 		const existingUser = await User.findOne({ username: data.username });
 		if (existingUser)
