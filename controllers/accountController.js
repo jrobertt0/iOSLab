@@ -8,7 +8,15 @@ import User from "../models/user.model.js";
 export const getUser = async (req, res) => {
 	User.findById(req.username).then((user) =>
 		res
-			.send(new response({ data: { user: user } }))
+			.send(new response({ data: { user: {
+				tasks: user.tasks,
+				username: user.username,
+				name: user.name,
+				password: user.password,
+				school: user.school,
+				score: user.score,
+				date: user.date
+			} } }))
 			.catch((err) =>
 				res
 					.status(400)

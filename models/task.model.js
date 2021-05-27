@@ -6,6 +6,7 @@ class Task{
 	place;
 	date;
 	description;
+	subject;
 
 	constructor(
 		id,
@@ -15,6 +16,7 @@ class Task{
 		place,
 		date,
 		description,
+		subject,
 	){
 		this.id = id;
 		this.title = title;
@@ -23,6 +25,7 @@ class Task{
 		this.place = place;
 		this.date = date;
 		this.description = description;
+		this.subject = subject;
 	}
 }
 

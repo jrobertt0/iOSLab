@@ -49,7 +49,8 @@ export const addTask = (req, res) => {
 					points,
 					place,
 					date,
-					description
+					description,
+					subject
 				)
 			);
 
@@ -121,6 +122,7 @@ export const editTask = async (req, res) => {
 					tasks[i].place = place;
 					tasks[i].date = date;
 					tasks[i].description = description;
+					tasks[i].subject = subject;
 					edited = true;
 					break;
 				}
