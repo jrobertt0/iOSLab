@@ -6,7 +6,7 @@ class response {
 	constructor(obj) {
 		this.status = obj.status ? obj.status : "Success";
 		this.message = obj.message ? obj.message : "";
-		this.data = obj.data ? obj.data : null;
+		this.data = obj.data ? obj.data : {};
 	}
 }
 
